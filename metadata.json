@@ -1,0 +1,6 @@
+{
+  "name": "VIP PERFUM - Luxury Perfumes Egypt",
+  "description": "Premium black-and-gold Egyptian perfume e-commerce boutique featuring exclusive fragrance collections, curated gift packages, and free bottle offers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
