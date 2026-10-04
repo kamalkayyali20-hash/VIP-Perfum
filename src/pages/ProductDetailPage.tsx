@@ -10,7 +10,15 @@ import {
   ArrowLeft,
   ChevronRight,
   AlertCircle,
+  Flame,
+  Clock,
 } from 'lucide-react';
+import { Concentration } from '../types';
+import {
+  CONCENTRATION_DETAILS,
+  ALL_CONCENTRATIONS,
+  getPriceWithConcentration,
+} from '../config/concentrations';
 import { useLanguage } from '../context/LanguageContext';
 import { useStore } from '../context/StoreContext';
 import { formatCurrency } from '../utils/currency';
@@ -54,13 +62,27 @@ export const ProductDetailPage: React.FC = () => {
     );
   }
 
+  const [selectedConcentration, setSelectedConcentration] = useState<Concentration>(
+    product?.concentration || 'Eau de Parfum'
+  );
+
+  useEffect(() => {
+    if (product) {
+      setSelectedConcentration(product.concentration || 'Eau de Parfum');
+    }
+  }, [product]);
+
   const currentVariant = product.variants.find((v) => v.size === selectedSize) || product.variants[0];
   const isOutOfStock = !currentVariant || currentVariant.stock < 1;
   const isWishlisted = isInWishlist(product.id);
 
+  const unitPrice = currentVariant
+    ? getPriceWithConcentration(currentVariant.price, selectedConcentration)
+    : 0;
+
   const handleAddToCart = () => {
     if (isOutOfStock) return;
-    addToCart(product, selectedSize, quantity);
+    addToCart(product, selectedSize, quantity, selectedConcentration);
     setAddedSuccess(true);
     setTimeout(() => setAddedSuccess(false), 2000);
   };
@@ -168,17 +190,17 @@ export const ProductDetailPage: React.FC = () => {
               <span>·</span>
               <span>{family}</span>
               <span>·</span>
-              <span className="text-[#D4AF37] font-semibold">{product.concentration}</span>
+              <span className="text-[#D4AF37] font-semibold">{selectedConcentration}</span>
             </div>
 
             <h1 className="text-3xl sm:text-4xl font-display font-bold text-[#F5F1E8] mb-3">
               {title}
             </h1>
 
-            {/* Price */}
+            {/* Calculated Price */}
             <div className="flex items-baseline gap-3">
               <span className="text-3xl font-bold text-[#D4AF37] tabular-nums font-mono">
-                {currentVariant ? formatCurrency(currentVariant.price, language) : ''}
+                {formatCurrency(unitPrice, language)}
               </span>
               <span className="text-xs text-[#B6B0A4]">
                 {language === 'ar' ? 'شامل ضريبة القيمة المضافة' : 'VAT inclusive'}
@@ -186,7 +208,74 @@ export const ProductDetailPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Size Selector */}
+          {/* 1. CHOOSE BETWEEN THE 4 CONCENTRATION TYPES */}
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-[#F5F1E8] flex items-center gap-1.5">
+                <Flame className="w-4 h-4 text-[#D4AF37]" />
+                <span>{language === 'ar' ? 'اختر نوع وتركيز العطر (4 أنواع متاحة):' : 'Select Perfume Type (4 Options):'}</span>
+              </label>
+              <span className="text-xs font-mono text-[#D4AF37]">
+                {CONCENTRATION_DETAILS[selectedConcentration].oilPercentage}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {ALL_CONCENTRATIONS.map((concKey) => {
+                const detail = CONCENTRATION_DETAILS[concKey];
+                const isSelected = selectedConcentration === concKey;
+                const diff = detail.priceDelta;
+
+                return (
+                  <button
+                    key={concKey}
+                    type="button"
+                    onClick={() => setSelectedConcentration(concKey)}
+                    className={`p-3 rounded-xl border text-start transition-all relative flex flex-col justify-between min-h-[64px] ${
+                      isSelected
+                        ? 'bg-gradient-to-r from-[#1c1810] to-[#141414] border-[#D4AF37] ring-1 ring-[#D4AF37]/50 shadow-md'
+                        : 'bg-[#151515] border-[#252525] hover:border-[#D4AF37]/40 text-[#B6B0A4]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span className={`text-xs font-bold ${isSelected ? 'text-[#F5F1E8]' : 'text-[#F5F1E8]/90'}`}>
+                        {language === 'ar' ? detail.nameAr : detail.nameEn}
+                      </span>
+                      {isSelected && <Check className="w-4 h-4 text-[#D4AF37] shrink-0" />}
+                    </div>
+
+                    <div className="flex items-center justify-between mt-1 text-[11px]">
+                      <span className={isSelected ? 'text-[#D4AF37] font-medium' : 'text-[#888]'}>
+                        {language === 'ar' ? detail.badgeAr : detail.badgeEn}
+                      </span>
+                      <span className="font-mono text-[#F5F1E8] tabular-nums font-semibold">
+                        {diff > 0 ? `+${diff} EGP` : diff < 0 ? `${diff} EGP` : language === 'ar' ? 'الأساسي' : 'Base'}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Concentration Characteristics Card */}
+            <div className="p-3 rounded-xl bg-[#0f0f0f] border border-[#D4AF37]/20 text-xs text-[#B6B0A4] flex items-start gap-2.5">
+              <Clock className="w-4 h-4 text-[#D4AF37] shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <span className="text-[#F5F1E8] font-semibold block">
+                  {language === 'ar'
+                    ? CONCENTRATION_DETAILS[selectedConcentration].longevityAr
+                    : CONCENTRATION_DETAILS[selectedConcentration].longevityEn}
+                </span>
+                <p className="text-[11px] leading-relaxed">
+                  {language === 'ar'
+                    ? CONCENTRATION_DETAILS[selectedConcentration].descriptionAr
+                    : CONCENTRATION_DETAILS[selectedConcentration].descriptionEn}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Size Selector */}
           <div className="space-y-2 pt-2">
             <label className="text-xs font-semibold text-[#F5F1E8] block">
               {t('sizeSelect')}:
@@ -195,6 +284,7 @@ export const ProductDetailPage: React.FC = () => {
               {product.variants.map((v) => {
                 const isSelected = selectedSize === v.size;
                 const isVariantInStock = v.stock > 0;
+                const vPrice = getPriceWithConcentration(v.price, selectedConcentration);
 
                 return (
                   <button
@@ -209,8 +299,8 @@ export const ProductDetailPage: React.FC = () => {
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-sm text-[#F5F1E8]">{v.size}</span>
-                      <span className="text-xs font-mono font-semibold text-[#D4AF37]">
-                        {formatCurrency(v.price, language)}
+                      <span className="text-xs font-mono font-semibold text-[#D4AF37] tabular-nums">
+                        {formatCurrency(vPrice, language)}
                       </span>
                     </div>
                     <div className="text-[11px] text-[#B6B0A4] mt-1">

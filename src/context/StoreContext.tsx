@@ -9,10 +9,12 @@ import {
   ShippingAddress,
   PaymentMethod,
   PaymentStatus,
+  Concentration,
 } from '../types';
 import { DEMO_PRODUCTS } from '../config/products';
 import { STORE_PACKAGES } from '../config/packages';
 import { INITIAL_STORE_SETTINGS, StoreSettings } from '../config/storeSettings';
+import { getPriceWithConcentration } from '../config/concentrations';
 import { calculatePromotions, reconcileGifts, PromotionCalculationResult } from '../utils/promotionCalculator';
 import { orderService } from '../services';
 
@@ -34,8 +36,18 @@ interface StoreContextType {
   finalTotal: number;
   totalCartItemCount: number;
 
+  // Quick View Modal
+  quickViewProduct: Product | null;
+  openQuickView: (product: Product) => void;
+  closeQuickView: () => void;
+
   // Actions
-  addToCart: (product: Product, size: '50ml' | '100ml', quantity?: number) => void;
+  addToCart: (
+    product: Product,
+    size: '50ml' | '100ml',
+    quantity?: number,
+    concentration?: Concentration
+  ) => void;
   updateCartItemQuantity: (id: string, quantity: number) => void;
   removeCartItem: (id: string) => void;
   addPackageToCart: (
@@ -111,6 +123,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
 
   const [giftsDeclined, setGiftsDeclined] = useState<boolean>(false);
+  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+
+  const openQuickView = (product: Product) => setQuickViewProduct(product);
+  const closeQuickView = () => setQuickViewProduct(null);
   const [selectedGovernorateId, setSelectedGovernorateId] = useState<string>('cairo');
 
   // Promotion calculation
@@ -200,14 +216,27 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [promotionResult, giftsDeclined]);
 
   // Actions
-  const addToCart = (product: Product, size: '50ml' | '100ml', quantity = 1) => {
+  const addToCart = (
+    product: Product,
+    size: '50ml' | '100ml',
+    quantity = 1,
+    concentration?: Concentration
+  ) => {
     const variant = product.variants.find((v) => v.size === size);
     if (!variant || variant.stock < 1) return;
+
+    const chosenConcentration = concentration || product.concentration || 'Eau de Parfum';
+    const unitPrice = getPriceWithConcentration(variant.price, chosenConcentration);
 
     setGiftsDeclined(false); // Reset decline when cart changes so customer gets chance to choose
 
     setCart((prev) => {
-      const existing = prev.find((item) => item.productId === product.id && item.size === size);
+      const existing = prev.find(
+        (item) =>
+          item.productId === product.id &&
+          item.size === size &&
+          (item.concentration || product.concentration) === chosenConcentration
+      );
       if (existing) {
         return prev.map((item) =>
           item.id === existing.id
@@ -216,14 +245,15 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         );
       }
       const newItem: CartItem = {
-        id: `${product.id}_${size}_${Date.now()}`,
+        id: `${product.id}_${size}_${chosenConcentration.replace(/\s+/g, '_')}_${Date.now()}`,
         productId: product.id,
         slug: product.slug,
         nameAr: product.nameAr,
         nameEn: product.nameEn,
         image: product.image,
         size,
-        price: variant.price,
+        concentration: chosenConcentration,
+        price: unitPrice,
         quantity: Math.min(quantity, variant.stock),
       };
       return [...prev, newItem];
@@ -431,6 +461,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         shippingFee,
         finalTotal,
         totalCartItemCount,
+        quickViewProduct,
+        openQuickView,
+        closeQuickView,
         addToCart,
         updateCartItemQuantity,
         removeCartItem,

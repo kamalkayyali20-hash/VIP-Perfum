@@ -681,8 +681,8 @@ export const CheckoutPage: React.FC = () => {
             <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1 text-xs">
               {cart.map((item) => (
                 <div key={item.id} className="flex items-center justify-between text-[#B6B0A4]">
-                  <span className="truncate max-w-[170px]">
-                    {item.quantity} × {language === 'ar' ? item.nameAr : item.nameEn} ({item.size})
+                  <span className="truncate max-w-[190px]">
+                    {item.quantity} × {language === 'ar' ? item.nameAr : item.nameEn} ({item.size}{item.concentration ? ` · ${item.concentration}` : ''})
                   </span>
                   <span className="font-mono text-[#F5F1E8] tabular-nums">
                     {formatCurrency(item.price * item.quantity, language)}

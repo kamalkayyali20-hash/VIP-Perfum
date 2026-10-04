@@ -91,6 +91,7 @@ export interface CartItem {
   nameEn: string;
   image: string;
   size: '50ml' | '100ml';
+  concentration?: Concentration;
   price: number;
   quantity: number;
 }

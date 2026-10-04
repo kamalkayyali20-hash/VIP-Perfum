@@ -157,8 +157,16 @@ export const CartPage: React.FC = () => {
                         >
                           {language === 'ar' ? item.nameAr : item.nameEn}
                         </Link>
-                        <div className="flex items-center gap-2 text-xs text-[#B6B0A4] mt-0.5">
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs text-[#B6B0A4] mt-0.5">
                           <span className="text-[#D4AF37] font-semibold">{item.size}</span>
+                          {item.concentration && (
+                            <>
+                              <span>·</span>
+                              <span className="text-[#F5F1E8] font-medium bg-[#1e1c16] px-1.5 py-0.5 rounded text-[11px] border border-[#D4AF37]/30">
+                                {item.concentration}
+                              </span>
+                            </>
+                          )}
                           <span>·</span>
                           <span className="tabular-nums font-mono">
                             {formatCurrency(item.price, language)} / {language === 'ar' ? 'زجاجة' : 'bottle'}

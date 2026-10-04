@@ -191,7 +191,9 @@ export const OrderConfirmationPage: React.FC = () => {
                 <span className="font-semibold text-[#F5F1E8]">
                   {item.quantity} × {language === 'ar' ? item.nameAr : item.nameEn}
                 </span>
-                <span className="text-[#B6B0A4] block text-[11px]">{item.size}</span>
+                <span className="text-[#B6B0A4] block text-[11px]">
+                  {item.size}{item.concentration ? ` · ${item.concentration}` : ''}
+                </span>
               </div>
               <span className="font-mono text-[#D4AF37] font-semibold tabular-nums">
                 {formatCurrency(item.price * item.quantity, language)}

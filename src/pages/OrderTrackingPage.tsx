@@ -360,7 +360,7 @@ export const OrderTrackingPage: React.FC = () => {
               {foundOrder.items.map((it) => (
                 <div key={it.id} className="flex justify-between text-[#B6B0A4]">
                   <span>
-                    {it.quantity} × {language === 'ar' ? it.nameAr : it.nameEn} ({it.size})
+                    {it.quantity} × {language === 'ar' ? it.nameAr : it.nameEn} ({it.size}{it.concentration ? ` · ${it.concentration}` : ''})
                   </span>
                   <span className="font-mono text-[#F5F1E8]">
                     {formatCurrency(it.price * it.quantity, language)}

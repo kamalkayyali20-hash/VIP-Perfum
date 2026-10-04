@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, ShoppingBag, Check } from 'lucide-react';
+import { Heart, ShoppingBag, Check, Eye, Sparkles } from 'lucide-react';
 import { Product } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
 import { useStore } from '../../context/StoreContext';
@@ -13,7 +13,7 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { language, t } = useLanguage();
-  const { addToCart, isInWishlist, toggleWishlist } = useStore();
+  const { addToCart, isInWishlist, toggleWishlist, openQuickView } = useStore();
   const [selectedSize, setSelectedSize] = useState<'50ml' | '100ml'>('100ml');
   const [addedAnimation, setAddedAnimation] = useState(false);
 
@@ -64,12 +64,27 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           />
         </button>
 
-        {/* Luxury collection or Offer hint tag (unobtrusive, single tag max) */}
+        {/* Luxury collection tag */}
         {product.isLuxuryCollection && (
-          <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 bg-[#080808]/85 border border-[#D4AF37]/40 rounded text-[11px] font-semibold text-[#D4AF37] tracking-wider uppercase">
+          <div className="absolute top-3 right-3 px-2 py-0.5 bg-[#080808]/85 border border-[#D4AF37]/40 rounded text-[10px] font-semibold text-[#D4AF37] tracking-wider uppercase">
             VIP Luxury
           </div>
         )}
+
+        {/* Quick View Button (hover on desktop, accessible bottom bar on mobile) */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openQuickView(product);
+          }}
+          aria-label={language === 'ar' ? 'نظرة سريعة وتخصيص التركيز' : 'Quick View & Customize Types'}
+          className="absolute bottom-2.5 inset-x-2.5 py-1.5 px-3 rounded-lg bg-[#080808]/90 hover:bg-[#D4AF37] hover:text-[#080808] border border-[#D4AF37]/50 text-[#D4AF37] font-semibold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 transition-all opacity-95 sm:opacity-0 sm:group-hover:opacity-100 backdrop-blur-sm shadow-lg min-h-[36px]"
+        >
+          <Eye className="w-3.5 h-3.5" />
+          <span>{language === 'ar' ? 'نظرة سريعة · 4 تركيزات' : 'Quick View · 4 Types'}</span>
+        </button>
       </div>
 
       {/* Content & Metadata */}
@@ -80,8 +95,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <span>{product.gender === 'men' ? t('navMen') : t('navWomen')}</span>
             <span aria-hidden="true">·</span>
             <span className="truncate">{family}</span>
-            <span aria-hidden="true">·</span>
-            <span className="truncate">{product.concentration}</span>
           </div>
 
           {/* Product Name */}
@@ -90,6 +103,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               {title}
             </h3>
           </Link>
+
+          {/* 4 Types Available Label */}
+          <div className="flex items-center gap-1 text-[10px] sm:text-[11px] text-[#D4AF37] mt-1">
+            <Sparkles className="w-3 h-3 text-[#D4AF37] shrink-0" />
+            <span className="font-medium truncate">
+              {language === 'ar' ? 'متاح بـ 4 أنواع تركيز' : 'Available in 4 Perfume Types'}
+            </span>
+          </div>
         </div>
 
         {/* Size Selection & Price Section */}

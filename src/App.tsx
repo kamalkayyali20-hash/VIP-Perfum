@@ -9,6 +9,7 @@ import { LanguageProvider } from './context/LanguageContext';
 import { StoreProvider } from './context/StoreContext';
 import { Header } from './components/common/Header';
 import { Footer } from './components/common/Footer';
+import { QuickViewModal } from './components/common/QuickViewModal';
 
 // Pages
 import { HomePage } from './pages/HomePage';
@@ -53,6 +54,7 @@ export default function App() {
               </Routes>
             </main>
             <Footer />
+            <QuickViewModal />
           </div>
         </BrowserRouter>
       </StoreProvider>
